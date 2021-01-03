@@ -1,7 +1,7 @@
 import {Page, Browser} from 'puppeteer';
-import ScraperInterface from '../interfaces/Scraper';
+import ScraperServiceInterface from '../interfaces/Scraper';
 
-export default class Scraper implements ScraperInterface{
+export default class ScraperService implements ScraperServiceInterface {
   public page: Page
   public browser: Browser
 
@@ -9,7 +9,7 @@ export default class Scraper implements ScraperInterface{
     this.browser = browser
   }
 
-  protected async loadPage(url: string): Promise<void>{
+  protected async loadPage(url: string): Promise<void> {
     try {
       const page = await this.browser.newPage();
       await page.setViewport({ width: 1200, height: 800 });

@@ -1,6 +1,6 @@
 import { Page,Browser } from "puppeteer";
 
-export default  interface ScraperInterface  {
+export default  interface ScraperServiceInterface  {
    page: Page
    browser: Browser
 }

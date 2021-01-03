@@ -1,9 +1,10 @@
 import {Browser, Page} from 'puppeteer'
-import PatreonInterface, { ScrapPatreonOptions, ScrapPatreonResponse } from "../interfaces/Patreon"
-import Scraper from './Scraper'
+import {PatreonServiceInterface, PatreonData, ScrapPatreonOptions, ScrapPatreonResponse } from "../interfaces/Patreon"
+import ScraperService from './Scraper'
+import Patreon from '../database/models/Patreon'
 
 
-export default class Patreon extends Scraper implements PatreonInterface {
+export default class PatreonService extends ScraperService implements PatreonServiceInterface {
   public patreonLoginUrl: string
   public patreonProfileUrl: string
 
@@ -22,6 +23,27 @@ export default class Patreon extends Scraper implements PatreonInterface {
 
   }
 
+  public async persistData(data: PatreonData): Promise<PatreonData> {
+    const [record] = await Patreon.query()
+      .where('user_id', '=', data.user_id)
+
+      let result 
+      if(record){
+        result = await Patreon.query()
+          .patchAndFetchById(record.id, {
+            patrons: data.patrons,
+            per_month: data.per_month
+          })
+      }else{
+        result = await Patreon.query().insert({
+          patrons: data.patrons,
+          per_month: data.per_month,
+          user_id: data.user_id
+        })
+      }
+      return result
+}
+
   public async scrap(options: ScrapPatreonOptions): Promise<ScrapPatreonResponse> {
     try {
       await this.loadPage(this.patreonLoginUrl)
@@ -33,11 +55,13 @@ export default class Patreon extends Scraper implements PatreonInterface {
       // Scrap important data
       const data = await this.page.evaluate(() => {
         const node = document.querySelectorAll("h2.sc-AxgMl.kHusHC")
-        return { patrons: node[0].textContent ?
+        return { 
+                 patrons: node[0].textContent ?
                  parseInt(node[0].textContent) : 0,
                  per_month: node[1].textContent ? parseInt(node[1].textContent.replace(/\$/g, '')): 0
                 }
       })
+
       return data
     }catch(error) {
       throw new Error ("Could not scrap page")
