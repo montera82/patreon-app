@@ -1,14 +1,16 @@
 import express from 'express'
 import routes from './api/index'
 import { ApolloServer } from 'apollo-server-express'
-import { typeDefs, resolvers} from './graphQL/schema'
+import typeDefs from './graphQL/schema'
+import resolvers from './graphQL/resolvers'
 
 const PORT = process.env.PORT
 const app = express()
 
 const server = new ApolloServer({
   typeDefs,
-  resolvers
+  resolvers,
+  introspection: true
 })
 
 server.applyMiddleware({app})
